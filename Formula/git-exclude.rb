@@ -2,7 +2,7 @@ class GitExclude < Formula
   desc "Manage .git/info/exclude from the terminal"
   homepage "https://github.com/ppseprus/git-exclude"
   url "https://github.com/ppseprus/git-exclude/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "07edaab427b6fdd61fb48cda5333163bf448c19b08064d19127e84a2bda7a6d4"
+  sha256 "078946f87f71986d9e8abb1b20ca0d6b0dd970ea69f25fb777b2b08a9711854c"
   license "MIT"
 
   depends_on "git" => :test
