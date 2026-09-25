@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # Monthly, so a formula that rots against a newer Homebrew is noticed
+  # before someone tries to install it.
+  schedule:
+    - cron: '0 6 1 * *'
+
+jobs:
+  formula:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Style
+        run: brew style Formula/git-exclude.rb
+
+      # --online fetches the tarball and checks the URL and checksum, so this
+      # fails until the matching tag exists in ppseprus/git-exclude.
+      - name: Audit
+        run: brew audit --strict --online --formula Formula/git-exclude.rb
+
+      - name: Install from source
+        run: brew install --build-from-source --formula Formula/git-exclude.rb
+
+      - name: Test
+        run: brew test --formula Formula/git-exclude.rb
+
+      - name: The man page is installed and git dispatches to it
+        run: |
+          git exclude --version
+          man -w git-exclude
