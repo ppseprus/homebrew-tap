@@ -30,12 +30,19 @@ jobs:
           fi
           brew --version
 
+      # brew audit, install and test take a formula name, not a path, so the
+      # checkout has to be visible to brew as a tap first.
       - name: Install this checkout as a tap
         run: |
           taps="$(brew --repository)/Library/Taps/ppseprus"
           mkdir -p "$taps"
           ln -s "$GITHUB_WORKSPACE" "$taps/homebrew-tap"
-          brew tap
+
+      # Loading a non-official tap runs its Ruby, so Homebrew ignores it until
+      # it is trusted. The docs prefer trusting the one formula over the tap.
+      # https://docs.brew.sh/Tap-Trust
+      - name: Trust the formula
+        run: brew trust --formula ppseprus/tap/git-exclude
 
       - name: Style
         run: brew style ppseprus/tap
@@ -44,6 +51,11 @@ jobs:
       # fails if the tag is missing or the sha256 is stale.
       - name: Audit
         run: brew audit --strict --online ppseprus/tap/git-exclude
+
+      # brew test needs the :test dependencies present; on Linux that means
+      # brew's own git rather than the system one.
+      - name: Install test dependencies
+        run: brew install --only-dependencies --include-test ppseprus/tap/git-exclude
 
       - name: Install from source
         run: brew install --build-from-source ppseprus/tap/git-exclude
